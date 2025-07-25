@@ -1,0 +1,326 @@
+.section init
+        .zero r0
+        .temps r6, r7
+
+        # initialize jump table
+
+        r3 := jump_table
+        r4 := jump_table + 256
+
+        init_loop:
+
+        if (r3 == r4) goto command_init using r5
+
+                m[r0][r3] := input_error
+                r3 := r3 + 1
+
+        goto init_loop
+
+        command_init:
+
+        m[r0][jump_table + '0'] := digit
+        m[r0][jump_table + '1'] := digit
+        m[r0][jump_table + '2'] := digit
+        m[r0][jump_table + '3'] := digit
+        m[r0][jump_table + '4'] := digit
+        m[r0][jump_table + '5'] := digit
+        m[r0][jump_table + '6'] := digit
+        m[r0][jump_table + '7'] := digit
+        m[r0][jump_table + '8'] := digit
+        m[r0][jump_table + '9'] := digit
+        m[r0][jump_table + ' '] := space
+        m[r0][jump_table + '\n'] := newline
+        m[r0][jump_table + '+'] := plus
+        m[r0][jump_table + '-'] := minus
+        m[r0][jump_table + '*'] := mul
+        m[r0][jump_table + '/'] := div
+        m[r0][jump_table + '|'] := bit_or
+        m[r0][jump_table + '&'] := bit_and
+        m[r0][jump_table + 'c'] := change_sign
+        m[r0][jump_table + '~'] := bit_complement
+        m[r0][jump_table + 's'] := swap
+        m[r0][jump_table + 'd'] := duplicate
+        m[r0][jump_table + 'p'] := pop_and_discard
+        m[r0][jump_table + 'z'] := zero_stack
+
+        
+.section data
+        .space 10000
+        value_stack:
+
+.section rodata
+        jump_table:
+        .space 256
+
+.section text
+#command loop
+        main:
+                # output "main\n"
+                push r1 on stack r2 # holds address from callmain
+                r3 := value_stack
+                goto waiting
+
+        waiting:
+                # output "waiting\n"
+                r1 := input()
+
+        waiting_with_character:
+                if (r1 <s 0) goto end_loop using r5
+                # output "waiting_with_character\n"
+                r5 := jump_table + r1
+                r5 := m[r0][r5]
+                goto r5
+
+        entering:
+                # output "entering\n"
+                r1 := input()
+                if (48 <=s r1) goto check using r5
+                goto waiting_with_character
+
+                check:
+                       if (57 >=s r1) goto continue_digit using r5
+                       goto waiting_with_character
+                       
+                continue_digit:
+                        #output '5'
+                        pop r5 off stack r3
+                        r5 := r5 * 10
+                        r1 := r1 - '0'
+                        r5 := r5 + r1
+                        #output r5
+                        push r5 on stack r3
+                        goto entering
+
+        
+        end_loop:
+                pop r5 off stack r2 # holds address from callmain
+                goto r5 #takes us back to callmain
+
+
+#helper functions
+        digit:
+                # output "digit\n"
+                r1 := r1 - '0'
+                push r1 on stack r3
+                goto entering
+
+        space:
+                goto waiting
+
+        input_error:
+                output "unknown character '"
+                output r1
+                output "'\n"
+                goto waiting
+
+        newline:
+                # output "newline\n"
+                # value_stack is the bottom of the stack
+                # r3 is the top of the stack
+                r4 := r3 # setting r4 to top of stack
+        begin_newline:
+                if (r4 == value_stack) goto waiting using r5
+                r5 := m[r0][r4]
+                output 62 # prints >
+                output 62 # prints >
+                output 62 # prints >
+                output 32 # prints space
+                goto print_check linking r1
+                output 10 # print newline
+                r4 := r4 + 1
+                goto begin_newline
+
+        plus:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                pop r1 off stack r3
+
+                r4 := r1 + r5
+                push r4 on stack r3
+                pop r4 off stack r2
+                goto waiting
+        
+        minus:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                pop r1 off stack r3
+
+                r4 := r1 - r5
+                push r4 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        mul:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                pop r1 off stack r3
+
+                r4 := r1 * r5
+                push r4 on stack r3
+                pop r4 off stack r2
+                goto waiting
+                
+        div:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r4 off stack r3
+                pop r1 off stack r3
+
+                if (r4 == r0) goto div_by_zero using r5
+
+                if (r4 <s 0) goto first_int_negative using r5
+                if (r1 <s 0) goto second_int_negative using r5
+        
+                r5 := r1 / r4
+        
+        div_continue:
+                push r5 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        bit_or:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r4 off stack r3
+                pop r1 off stack r3
+
+                r5 := r1 | r4 
+
+                push r5 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        bit_and:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r4 off stack r3
+                pop r1 off stack r3
+
+                r5 := r1 & r4 
+                # not sure about whether to use & or nand
+                push r5 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        change_sign:
+                goto check1 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                r4 := -r5
+                push r4 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        bit_complement:
+                goto check1 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                r4 := ~r5
+                push r4 on stack r3
+                pop r4 off stack r2
+                goto waiting
+
+        swap:
+                goto check3 linking r1
+                goto check2 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+                pop r1 off stack r3
+
+                push r5 on stack r3
+                push r1 on stack r3
+
+                pop r4 off stack r2
+                goto waiting
+
+        duplicate:
+                goto check1 linking r1
+                push r4 on stack r2
+
+                pop r5 off stack r3
+
+                push r5 on stack r3
+                push r5 on stack r3
+
+                pop r4 off stack r2
+                goto waiting
+
+        pop_and_discard:
+                goto check1 linking r1
+                pop stack r3
+                goto waiting
+
+        zero_stack:
+                r4 := r3 # setting r4 to top of stack
+        zero_loop:
+                if (r4 == value_stack) goto waiting using r5
+                r5 := m[r0][r4]
+                pop stack r3
+                r4 := r4 + 1
+                goto zero_loop
+
+        check1:  
+                if (r3 == value_stack) goto not_enough_operands1 using r5
+                goto r1
+
+        check2:
+                r4 := r3 + 1
+                if (r4 == value_stack) goto not_enough_operands2 using r5
+                goto r1
+
+        check3:  
+                if (r3 == value_stack) goto not_enough_operands2 using r5
+                goto r1
+        
+        not_enough_operands1:
+                output "Stack underflow---expected at least 1 element\n"
+                goto waiting
+
+        not_enough_operands2:
+                output "Stack underflow---expected at least 2 elements\n"
+                goto waiting
+
+        div_by_zero:
+                output "Division by zero\n"
+                push r1 on stack r3
+                push r4 on stack r3
+                pop r4 off stack r2
+
+                goto waiting
+
+        first_int_negative:
+                if (r1 <s 0) goto both_negative using r5
+                r4 := -r4
+                r5 := r1 / r4
+                r5 := -r5
+                goto div_continue
+
+        second_int_negative:
+                r1 := -r1
+                r5 := r1 / r4
+                r5 := -r5
+                goto div_continue
+
+        both_negative:
+                r4 := -r4
+                r1 := -r1
+                r5 := r1 / r4
+                goto div_continue

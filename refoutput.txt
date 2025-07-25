@@ -1,0 +1,51 @@
+Stack underflow---expected at least 1 element
+Stack underflow---expected at least 1 element
+Stack underflow---expected at least 2 elements
+Stack underflow---expected at least 1 element
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+Division by zero
+>>> 38
+>>> -218
+>>> -109
+>>> 0
+>>> 154
+>>> -1
+>>> -546148
+>>> -631
+>>> -541
+>>> 455623
+>>> 0
+>>> 0
+>>> 0
+>>> 215
+>>> 215
+>>> 0
+>>> 0
+>>> 25484
+>>> -14193
+>>> -1
+>>> 651
+>>> -1
+>>> -1
+>>> -1
+>>> 671
+>>> -875
+>>> -55
+>>> -875
+>>> -875

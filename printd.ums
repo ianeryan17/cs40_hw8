@@ -1,0 +1,64 @@
+.section init
+        .zero r0
+        .temps r6, r7
+
+.section text
+        print_check:
+                push r1 on stack r2
+                push r3 on stack r2
+                push r4 on stack r2
+                if (r5 <s 0) goto special_check using r3
+        
+        not_special:
+                goto recursive_print linking r1 
+                pop r4 off stack r2
+                pop r3 off stack r2
+                pop r1 off stack r2
+                goto r1
+
+        recursive_print:
+                push r1 on stack r2
+                if (r5 <s 0) goto negative_check using r3
+                r4 := r5 mod 10
+                goto continue_recurse
+
+        continue_recurse:
+                push r4 on stack r2
+                if (r5 == r4) goto end_recurse using r3                
+                r5 := r5 / 10
+                goto recursive_print linking r1
+                goto end_recurse
+                
+        end_recurse:
+                pop r5 off stack r2        
+                r4 := 48 + r5
+                output r4
+                #returning to caller
+                pop r1 off stack r2
+                goto r1
+
+        negative_check:
+                output 45 # -
+                r5 := - r5
+                r4 := r5 mod 10
+                goto continue_recurse
+
+        special_check:
+                if (r5 >s 0) goto special_case using r3
+                goto not_special
+       
+        special_case:
+                output 45 # -
+                output 50 # 2       
+                output 49 # 1
+                output 52 # 4
+                output 55 # 7
+                output 52 # 4
+                output 56 # 8
+                output 51 # 3
+                output 54 # 6
+                output 52 # 4
+                output 56 # 8
+
+                pop r1 off stack r2
+                goto r1
